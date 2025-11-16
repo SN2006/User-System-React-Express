@@ -69,7 +69,7 @@
 ## 📁 Структура проєкту
 
 ```
-pz7_8/
+User-System-React-Express/
 ├── client/                      # React frontend
 │   ├── src/
 │   │   ├── components/          # React компоненти
@@ -118,8 +118,8 @@ pz7_8/
 
 ### Крок 1: Клонування репозиторію
 ```bash
-git clone <url-репозиторію>
-cd pz7_8
+git clone https://github.com/SN2006/User-System-React-Express.git
+cd User-System-React-Express
 ```
 
 ### Крок 2: Встановлення залежностей
