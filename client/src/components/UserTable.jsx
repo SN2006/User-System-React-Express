@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useThrottle } from '../hooks/useThrottle';
 import './UserTable.css';
 
 const UserTable = ({ users, onDelete, onRoleChange, loading }) => {
@@ -24,15 +25,33 @@ const UserTable = ({ users, onDelete, onRoleChange, loading }) => {
     );
   };
 
-  const handleRoleChange = (userId, newRole, currentRole) => {
+  // Throttled handlers для запобігання множинних викликів
+  const performRoleChange = useCallback((userId, newRole, currentRole) => {
     console.log('Changing role from', currentRole, 'to', newRole);
     if (newRole !== currentRole) {
       if (window.confirm(`Change role to ${newRole}?`)) {
         onRoleChange(userId, newRole);
       } else {
-        setSelectedRole({ ...selectedRole, [userId]: currentRole });
+        setSelectedRole((prev) => ({ ...prev, [userId]: currentRole }));
       }
     }
+  }, [onRoleChange]);
+
+  const performDelete = useCallback((userId, username) => {
+    if (window.confirm(`Delete user ${username}?`)) {
+      onDelete(userId);
+    }
+  }, [onDelete]);
+
+  const throttledRoleChange = useThrottle(performRoleChange, 1000);
+  const throttledDelete = useThrottle(performDelete, 1000);
+
+  const handleRoleChange = (userId, newRole, currentRole) => {
+    throttledRoleChange(userId, newRole, currentRole);
+  };
+
+  const handleDelete = (userId, username) => {
+    throttledDelete(userId, username);
   };
 
   if (loading) {
@@ -85,11 +104,7 @@ const UserTable = ({ users, onDelete, onRoleChange, loading }) => {
                   {canDelete(user) ? (
                     <button
                       className="delete-btn"
-                      onClick={() => {
-                        if (window.confirm(`Delete user ${user.username}?`)) {
-                          onDelete(user.id);
-                        }
-                      }}
+                      onClick={() => handleDelete(user.id, user.username)}
                     >
                       Delete
                     </button>

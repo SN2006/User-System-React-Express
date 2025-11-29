@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Header from '../components/Header';
 import UserTable from '../components/UserTable';
 import userService from '../services/userService';
+import { useThrottle } from '../hooks/useThrottle';
 import './RolePage.css';
 
 const AdminPage = () => {
@@ -27,7 +28,7 @@ const AdminPage = () => {
     }
   };
 
-  const handleDelete = async (userId) => {
+  const performDelete = useCallback(async (userId) => {
     try {
       await userService.deleteUser(userId);
       setSuccessMessage('User deleted successfully');
@@ -37,7 +38,9 @@ const AdminPage = () => {
       setError(err.response?.data?.error || 'Failed to delete user');
       setTimeout(() => setError(''), 3000);
     }
-  };
+  }, []);
+
+  const handleDelete = useThrottle(performDelete, 1000);
 
   return (
     <div className="role-page">
